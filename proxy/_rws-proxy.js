@@ -31,7 +31,7 @@ if( commander.systemdInstall ) {
  * RWS Proxy Main Parts
  */
 // importing logger module from here
-//! const logger = require("./lib/logger");
+const logger = require("./lib/logger");
 
 // if the 'config-file' parameter is not in command line,
 // the below defaut config value will be used
@@ -46,9 +46,8 @@ if( commander.configFile === undefined ) {
 };
 
 if (!fs.existsSync(rws_config_filenam)) {
-//!    logger.error('Configuration file not found! : ' 
-//!            + rws_config_filenam );
-    console.log('Configuration file not found! : ' + rws_config_filenam)
+    logger.error('Configuration file not found! : ' 
+            + rws_config_filenam );
     process.exit(-1)
 };
     
@@ -64,26 +63,27 @@ nconf.file({
 let config_ = nconf.get('config');
 let firebaseClient_;
 
-console.log('Config: ' + JSON.stringify(config_));
-console.log('Auth Type: ' + config_.auth_type);
+logger.debug('Config: ' + JSON.stringify(config_));
+logger.debug('Auth Type: ' + config_.auth_type);
 
 if( config_.auth_type === "email-password" ) {
     const FirebaseClientEmail = require('./lib/firebase_client_email');
-    console.log('Using Email-Password of Firebase Auth');
+    logger.info('Using Email-Password of Firebase Auth');
     let proxy_config = nconf.get('config');
     let auth_params_ = nconf.get('email-password');
     let device_params_ = nconf.get('local-device-config');
     let local_params = Object.assign(proxy_config, auth_params_, device_params_);
-    console.log('Params: ' + JSON.stringify(local_params) );
+    logger.debug('Params: ' + JSON.stringify(local_params) );
     firebaseClient_ = new FirebaseClientEmail(local_params);
 }
 else if( config_.auth_type == 'google-auth' ) {
-    //? TODD
-    console.log('Using Google Auth OAuth2 of Firebase Auth');
-    let params_ = nconf.get('google-auth');
-    console.log('Not supported Google Auth OAuth2');
-} else {
-    console.log('Not supported auth type in proxy_config.json :' + config_.auth_type);
+    // TODD
+    // logger.error('Using Google Auth OAuth2 of Firebase Auth');
+    // let params_ = nconf.get('google-auth');
+    logger.error('Not supported Google Auth OAuth2');
+}
+else {
+    logger.error('Not supported auth type in proxy_config.json :' + config_.auth_type);
 }
 
 

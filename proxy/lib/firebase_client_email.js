@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const firebase = require("firebase");
-const logger = require("./logger");
+//! const logger = require("./logger");
 const AppClient = require("./app_client");
 
 
@@ -15,15 +15,15 @@ module.exports  = class FirebaseClientEmail {
     constructor ( params ) {
 
         if( params == undefined ) {
-            logger.error('No Configuration parameters to initialize Firebase Client');
+           logger.error('No Configuration parameters to initialize Firebase Client');
         }
         this.params_ = params;
-        logger.debug('Firebase Config file path: ' 
-                + params.firebase_client_config_file );
+        console.log('Firebase Config file path: ' + params.firebase_client_config_file );
         let firebase_config = JSON.parse(require('fs')
                 .readFileSync(params.firebase_client_config_file, 'utf8'));
-        logger.debug('Firebase Config : ' + JSON.stringify(firebase_config ));
-
+        console.log('Firebase Config : ' + JSON.stringify(firebase_config ));
+        console.log('Firebase Config file path: '  + params.firebase_client_config_file );
+        console.log('Firebase Config : ' + JSON.stringify(firebase_config ));
         // If the server time diff value of the message is greater than 
         // the specified threshold, the message is ignored.
         this.message_timeout_ = params.firebase_message_timeout;
@@ -39,10 +39,14 @@ module.exports  = class FirebaseClientEmail {
         // signin to google firebase with email/password method.
         firebase.auth().signInWithEmailAndPassword(params.email, params.password).then(function(result) {
             // signin successed
-            logger.info('Signing In successful.');
-            logger.debug('User uid: ' + result.uid );
-            logger.info('User email: ' + result.email );
-            logger.info('User emailVerified: ' + result.emailVerified );
+//!            logger.info('Signing In successful.');
+//!            logger.debug('User uid: ' + result.uid );
+//!            logger.info('User email: ' + result.email );
+//!            logger.info('User emailVerified: ' + result.emailVerified );
+            console.log('Signing In successful.');
+            console.log('User uid: ' + result.uid );
+            console.log('User email: ' + result.email );
+            console.log('User emailVerified: ' + result.emailVerified );
         }).catch(function(error) {
             // Handle Errors here.
             let errorCode = error.code;
@@ -51,7 +55,7 @@ module.exports  = class FirebaseClientEmail {
             let email = error.email;
             // The firebase.auth.AuthCredential type that was used.
             let credential = error.credential;
-            logger.error(error);
+//!            logger.error(error);
         });
     }
 
@@ -59,11 +63,10 @@ module.exports  = class FirebaseClientEmail {
         if (user) {
             this.uid_ = user.uid;
             // User signed in!
-            logger.info("AuthStatueChanged User : " + this.uid_ + " Signed In");
+            console.log("AuthStatueChanged User : " + this.uid_ + " Signed In");
             this.initFirebaseClient();
-
         }  else {
-            logger.info('AuthStatueChanged User : SignOut');
+            console.log('AuthStatueChanged User : SignOut');
             if( this.uid_  ) {
                 this.unInitFirebaseClient();
             };
@@ -72,11 +75,9 @@ module.exports  = class FirebaseClientEmail {
 
     initFirebaseClient () {
 
-        this.app_client_ =  new AppClient(this.params_.url,
-                this.sendDataseMessage.bind(this), 
-                this.updateDeviceInfoSession.bind(this));
+        this.app_client_ =  new AppClient(this.params_.url, this.sendDataseMessage.bind(this), this.updateDeviceInfoSession.bind(this));
         this.deviceId_ = this.app_client_.getDeviceId();
-        logger.info('App Client Device Id: ' + this.deviceId_);
+        console.log('App Client Device Id: ' + this.deviceId_);
         this.initDeviceInfo();
 
         // initialize the firebase server time offset
@@ -88,16 +89,16 @@ module.exports  = class FirebaseClientEmail {
 
         // start to listen the client message 
         this.messagesRef_ = this.database_.ref('messages/' + this.uid_ + '/' + this.deviceId_);
-        logger.debug('Message Ref: ' + this.messagesRef_ );
+        console.log('Message Ref: ' + this.messagesRef_ );
         // Make sure we remove all previous listeners.
         this.messagesRef_.off();
 
         let onNewDatabaseMessage = function(snap) {
             let val = snap.val();
             let messageTimeDiff = new Date().getTime() + this.serverTimeOffset_  -  val.timestamp;
-            logger.debug('New DB: To: ' + val.to + ', did: ' + val.deviceid + 
-                    ', rid: ' + val.roomid + ', cid: ' + val.clientid + 
-                    ', Timstamp: ' + val.timestamp + '(' + messageTimeDiff + ')');
+//!            logger.debug('New DB: To: ' + val.to + ', did: ' + val.deviceid + 
+//!                    ', rid: ' + val.roomid + ', cid: ' + val.clientid + 
+//!                    ', Timstamp: ' + val.timestamp + '(' + messageTimeDiff + ')');
             // Make sure the timestamp is not timeed out and valid message.
             // to : 'device' : means message sent to device from server
             // to : 'server' : means message sent to server from device
@@ -109,7 +110,7 @@ module.exports  = class FirebaseClientEmail {
                     // logger.debug('message Svr -> C: ' + val.message );
                     this.app_client_.doSendToDevice( val );
                 } else {
-                    logger.debug('Remove timeout message: ' + val.message );
+//!                    logger.debug('Remove timeout message: ' + val.message );
                 }
                 // remove the current message
                 snap.ref.remove();
@@ -131,14 +132,20 @@ module.exports  = class FirebaseClientEmail {
         //      'disconncted'
         //      'busy'
         //
+        let deviceType = 'Raspberry3A'
         this.deviceInfo_ = {
+//!            deviceid: deviceType,
             deviceid: String(this.deviceId_),
             dbconn: 'connected',
             session: 'available',
             title: this.params_.title,
             description: this.params_.description
         };
+        console.log('DeviceID: ' + String(this.deviceId_));
+        console.log('DeviceType: ' + deviceType);
+        console.log('Title: ' + this.params_.title);
         // initialize presence reference
+        console.log(this.database_.ref('devices/' + this.uid_ + '/' + this.deviceId_));
         this.presenceRef_ = this.database_.ref('devices/' + this.uid_ + '/' + this.deviceId_);
 
         // setting object for onDisconnect 
@@ -170,18 +177,16 @@ module.exports  = class FirebaseClientEmail {
 
         // updating previous connection status with  new connection value
         this.previous_connection_status = conn_status;
-        logger.info('AppClient Connection status : ' + conn_status );
+        console.log('AppClient Connection status : ' + conn_status );
         switch ( conn_status ) {
             case 'connected':
                 update_deviceinfo.dbconn = 'connected';
-                update_deviceinfo.update_timestamp = 
-                    firebase.database.ServerValue.TIMESTAMP
+                update_deviceinfo.update_timestamp = firebase.database.ServerValue.TIMESTAMP
                 update_deviceinfo.session = 'available';
                 break;
             case 'disconnected':
                 update_deviceinfo.dbconn = 'disconnected';
-                update_deviceinfo.update_timestamp = 
-                    firebase.database.ServerValue.TIMESTAMP
+                update_deviceinfo.update_timestamp = firebase.database.ServerValue.TIMESTAMP
                 update_deviceinfo.session = 'not_available';
                 break;
             case 'session_connected':
@@ -191,11 +196,10 @@ module.exports  = class FirebaseClientEmail {
                 break;
             case 'session_disconnected':
                 update_deviceinfo.session = 'available';
-                update_deviceinfo.access_timestamp = 
-                    firebase.database.ServerValue.TIMESTAMP
+                update_deviceinfo.access_timestamp = firebase.database.ServerValue.TIMESTAMP
                 break;
             default:
-                logger.error('Unknown AppClient Connection status: ' + conn_status );
+                console.log('Unknown AppClient Connection status: ' + conn_status );
                 return;
         };
         this.presenceRef_.update(update_deviceinfo);
@@ -215,7 +219,7 @@ module.exports  = class FirebaseClientEmail {
             message['timestamp'] = firebase.database.ServerValue.TIMESTAMP
                 this.messagesRef_.push(message);
         } else {
-            logger.error('ERROR: user does not signed in.');
+            console.log('ERROR: user does not signed in.');
             return false;
         };
         return true;

@@ -2,7 +2,7 @@
 'use strict';
 
 const WebSocket = require('ws');
-const logger = require("./logger");
+//! const logger = require("./logger");
 
 // constant variables
 const kConstantreconnectInterval_ = 10000; // 10 seconds
@@ -34,11 +34,11 @@ module.exports  = class WebSocketClient {
     
     // Trying to reconnect when websocket is disconnected or failed to connect
     dummyObserverCallback_(conn_status, data) {
-        logger.info('connection: ' + conn_status + ', Error: ' + data );
+//!        logger.info('connection: ' + conn_status + ', Error: ' + data );
     }
 
     initWebSocket () {
-        logger.debug('Create new websocket object');
+//!        logger.debug('Create new websocket object');
         // clear the queue before create websocket
         this.message_queue_.length = 0;
         delete this.websocket_;
@@ -54,7 +54,7 @@ module.exports  = class WebSocketClient {
     }
 
     onOpen_ () {
-        logger.info("Websocket connnected: " + this.websocket_.url);
+//!        logger.info("Websocket connnected: " + this.websocket_.url);
         this.observerCallback_('connected',this.websocket_.url);
         clearTimeout(this.reInitTimerObj_);
         this.isConnected_ = true;
@@ -64,7 +64,7 @@ module.exports  = class WebSocketClient {
     }
 
     onClose_ () {
-        logger.info('Websocket Disconnected, Trying to reconnect.');
+//!        logger.info('Websocket Disconnected, Trying to reconnect.');
         this.observerCallback_('disconnected',this.websocket_.url);
         this.isConnected_ = false;
         // create the reinit timer
@@ -76,13 +76,13 @@ module.exports  = class WebSocketClient {
     }
 
     onError_ (error) {
-        logger.debug("An error occured : " + error);
+//!        logger.debug("An error occured : " + error);
         this.observerCallback_('error', error);
     }
 
     doSendMessage (message) {
         if( this.isConnected_ == true && this.websocket_.readyState == WebSocket.OPEN ){
-            logger.debug('Message to Device : ' + message );
+//!            logger.debug('Message to Device : ' + message );
             this.websocket_.send(message);
         } // else {
         //     this.queuePush_(message);
@@ -90,19 +90,19 @@ module.exports  = class WebSocketClient {
     }
 
     doDisconnect () {
-        logger.info('Diconnecting websocket.');
+//!        logger.info('Diconnecting websocket.');
         this.websocket_.close();
     }
 
     queuePush_ (message) {
         this.message_queue_.push(message);
-        logger.debug("queuing message : " + this.message_queue_.length);
+//!        logger.debug("queuing message : " + this.message_queue_.length);
     }
 
     queueSend_ () {
         while (this.message_queue_.length > 0) {
             let message = this.message_queue_.shift();
-            logger.debug('Send Queue Proxy --> Device: ' + message );
+//!            logger.debug('Send Queue Proxy --> Device: ' + message );
             this.websocket_.send(message, function(error) {
                 if( error )  {
                     this.message_queue_.unshift(message);

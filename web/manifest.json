@@ -1,6 +1,6 @@
 {
-  "name": "Rpi WebRTC Streamer",
-  "short_name": "RWS",
+  "name": "Robol Control",
+  "short_name": "RC",
   "start_url": "/index.html",
   "display": "standalone",
   "orientation": "portrait",

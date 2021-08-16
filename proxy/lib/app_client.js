@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require('fs');
-const logger = require("./logger");
+//! const logger = require("./logger");
 const WebSocketClient = require('./websocket_client.js');
 
 
@@ -29,6 +29,10 @@ const MSG_CMD_KEEPALIVE = 'keepalive';
 
 module.exports  = class AppClient {
     constructor ( url, sendMessage, onAppClientObserver, deviceId ) {
+        //*    DEVICE ID 
+        //deviceId = "RaspberryPi3"
+        //this.deviceId_ = deviceId;
+        //* DEVICE ID END
         this.url_ = url;
         this.state_ = STATE_DISCONNECTED;
         this.session_state_ = SESSION_DISCONNECTED;
@@ -46,7 +50,7 @@ module.exports  = class AppClient {
             // using deviceId optional parameter
             this.deviceId_ = this.deviceId;
         }
-        logger.info('Using Device ID: ' + this.deviceId_ );
+        console.log('Using Device ID: ' + this.deviceId_ );
         this.sendMessage_ = sendMessage;
         this.websocketClient_ = new WebSocketClient(this.url_,
             this.doSendToServer.bind(this), this.onWebSocketObserver.bind(this) );
@@ -65,7 +69,7 @@ module.exports  = class AppClient {
         this.session_state_ = SESSION_CONNECTED;
         this.keepalive_interval_ = setInterval(this.onKeepAliveInterval.bind(this), 1000 );
         this.onAppClientObserver_('session_connected');
-        logger.info('Activating session state :  ' + this.session_state_ );
+        console.log('Activating session state :  ' + this.session_state_ );
     }
 
     deactivateSession_ () {
@@ -76,7 +80,7 @@ module.exports  = class AppClient {
         this.session_state_ = SESSION_DISCONNECTED;
         clearInterval(this.keepalive_interval_);
         this.onAppClientObserver_('session_disconnected');
-        logger.info('Deactivating session state :  ' + this.session_state_ );
+        console.log('Deactivating session state :  ' + this.session_state_ );
     }
 
     validateSession_ (roomid, clientid) {
@@ -85,13 +89,14 @@ module.exports  = class AppClient {
             //   roomid and clientid should be same with internal value
             //   when the session state is CONNECTED
             if( this.roomId_ == roomid && this.clientId_ == clientid) {
-                logger.info('Connection State: ' + this.session_state_ );
+                console.log('Connection State: ' + this.session_state_ );
                 return true;
             } else {
-                logger.error('Invalid Session Client id(Session): R:' +
-                        this.roomId_ + ', C:' + this.clientId_ );
-                logger.error('Invalid Session Client id(Message): R:' +
-                        roomid + ', C:' + clientid );
+//!                logger.error('Invalid Session Client id(Session): R:' +
+//!                        this.roomId_ + ', C:' + this.clientId_ );
+//!                logger.error('Invalid Session Client id(Message): R:' +
+//!                        roomid + ', C:' + clientid );
+//!                        roomid + ', C:' + clientid );
                 return false;
             }
         }
@@ -99,18 +104,18 @@ module.exports  = class AppClient {
             //   roomid and clientid should be different with internal value
             //   when the session state is CONNECTED
             if( this.roomId_ == roomid && this.clientId_ == clientid) {
-                logger.error('Invalid Session Client id(Session): R:' +
-                        this.roomId_ + ', C:' + this.clientId_ );
-                logger.error('Invalid Session Client id(Message): R:' +
-                        roomid + ', C:' + clientid );
+//!                logger.error('Invalid Session Client id(Session): R:' +
+//!                        this.roomId_ + ', C:' + this.clientId_ );
+//!                logger.error('Invalid Session Client id(Message): R:' +
+//!                        roomid + ', C:' + clientid );
                 return false;
             } else {
                 return true;
             }
         }
         else {
-            logger.error('Invalid session state during validating session: ' +
-                    this.session_state_ ) ;
+//!            logger.error('Invalid session state during validating session: ' +
+//!                    this.session_state_ ) ;
         }
         return false;
     }
@@ -127,18 +132,18 @@ module.exports  = class AppClient {
             clientid: String(this.clientId_),
             message: message
         };
-        logger.info('Device -> Server : ' + JSON.stringify(send_message) );
+        console.log('Device -> Server : ' + JSON.stringify(send_message) );
         this.sendMessage_( send_message );
     }
 
     // dummy Observer callback
     onDummyAppClientObserver_(conn_status) {
-        logger.debug('DummyAppClientObserver called: ' + conn_status);
+//!        logger.debug('DummyAppClientObserver called: ' + conn_status);
     }
 
     // Start WebSocket connection
     deviceConnect() {
-        logger.info('Trying to connenct device through WebSocket');
+//!        logger.info('Trying to connenct device through WebSocket');
         this.websocketClient_.initWebSocket();
     }
 
@@ -153,7 +158,7 @@ module.exports  = class AppClient {
             this.onAppClientObserver_('disconnected');
         }
         else {
-            logger.info('Error : ' + data );
+//!            logger.info('Error : ' + data );
         }
     }
 
@@ -167,7 +172,7 @@ module.exports  = class AppClient {
         // A value greater than 7 seconds is considered as a previous session
         // or other garbage value.
         if( update_difference >  4000  &&  update_difference < 7000) {
-            logger.error('Sending bye command triggered by KeepAlive timeout : ' + update_difference);
+//!            logger.error('Sending bye command triggered by KeepAlive timeout : ' + update_difference);
 
             // send bye message to device
             this.websocketClient_.doSendMessage(JSON.stringify({ cmd: 'send',
@@ -184,12 +189,12 @@ module.exports  = class AppClient {
     doSendToDevice (app_message) {
         // validate device id
         if( app_message.deviceid !== this.deviceId_ ) {
-            logger.error('ERROR: Device ID mismatch: ' + app_message.deviceid );
+//!            logger.error('ERROR: Device ID mismatch: ' + app_message.deviceid );
             return;
         }
 
         if( app_message.to !== 'device' ) {
-            logger.error('ERROR: unknown to value' + app_message.to );
+//!            logger.error('ERROR: unknown to value' + app_message.to );
             return;
         }
 
@@ -200,14 +205,14 @@ module.exports  = class AppClient {
                     // sending message
                     this.activateSession_(json_message.roomid, json_message.clientid );
                     if( this.websocketClient_.isConnected() ) {
-                        logger.info('Server -> Device : ' + JSON.stringify(app_message.message) );
+//!                        logger.info('Server -> Device : ' + JSON.stringify(app_message.message) );
                         this.websocketClient_.doSendMessage(app_message.message);
                     } else {
-                        logger.error('WebSocketClient is not ready to send register command');
+//!                        logger.error('WebSocketClient is not ready to send register command');
                     };
                 } else {
                     // print validation result
-                    logger.error('Invalid Session Message : ' + JSON.stringify(app_message ));
+//!                    logger.error('Invalid Session Message : ' + JSON.stringify(app_message ));
                     return;
                 }
                 break;
@@ -217,19 +222,19 @@ module.exports  = class AppClient {
                 if(this.validateSession_(app_message.roomid, app_message.clientid ) == true ){
                     let send_msg = JSON.parse( json_message.msg );
                     if( send_msg.type == 'bye' ) {
-                        logger.info('Sending Command Bye');
+                        console.log('Sending Command Bye');
                         this.deactivateSession_();
                     };
 
                     if( this.websocketClient_.isConnected() ) {
-                        logger.info('Server -> Device : ' + JSON.stringify(app_message.message) );
+                        console.log('Server -> Device : ' + JSON.stringify(app_message.message) );
                         this.websocketClient_.doSendMessage(app_message.message);
                     } else {
-                        logger.info('WebSocketClient is not ready to send(send)');
+                        console.log('WebSocketClient is not ready to send(send)');
                     }
                 } else  {
                     // print validation result
-                    logger.error('Invalid Session Message : ' + JSON.stringify(app_message ));
+//!                    logger.error('Invalid Session Message : ' + JSON.stringify(app_message ));
                 };
                 break;
             case MSG_CMD_KEEPALIVE:
@@ -246,8 +251,9 @@ module.exports  = class AppClient {
         let serial_line = ci_array[ci_array.length-2];
         let serial = serial_line.split(":");
         //  Using testing serial
-        if( serial.length < 2 )
-            return '000000005b8879cc';
-        return serial[1].slice(1);
+        return '00000000f1a25e89';
+//!        if( serial.length < 2 )
+//!            return '000000005b8879cc';
+//!        return serial[1].slice(1);
     };
 }
